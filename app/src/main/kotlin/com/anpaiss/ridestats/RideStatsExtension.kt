@@ -3,7 +3,10 @@ package com.anpaiss.ridestats
 import android.util.Log
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.extension.KarooExtension
+import io.hammerhead.karooext.models.DataType
+import io.hammerhead.karooext.models.OnStreamState
 import io.hammerhead.karooext.models.RideState
+import io.hammerhead.karooext.models.StreamState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,11 +35,44 @@ class RideStatsExtension : KarooExtension("ridestats", BuildConfig.VERSION_NAME)
             if (!connected) return@connect
             scope.launch { delay(START_DELAY_MS); sync(uploader, "start") }
             consumerId = karoo.addConsumer(RideState.Params, { _ -> }, {}) { s: RideState ->
+                val started = state is RideState.Idle && s !is RideState.Idle
                 val ended = state !is RideState.Idle && s is RideState.Idle
                 state = s
-                if (ended) scope.launch { delay(END_DELAY_MS); sync(uploader, "ride end") }
+                if (started) startBattery()
+                if (ended) {
+                    stopBattery()
+                    scope.launch { delay(END_DELAY_MS); sync(uploader, "ride end") }
+                }
             }
         }
+    }
+
+    // ── e-bike battery, from the BoschData extension, only while recording ──
+
+    private var batteryId: String? = null
+    private var rideStartMs = 0L
+    @Volatile private var firstPct: Int? = null
+    @Volatile private var lastPct: Int? = null
+
+    private fun startBattery() {
+        rideStartMs = System.currentTimeMillis()
+        firstPct = null; lastPct = null
+        // Streaming only while the bike is on and BoschData talks to it; without BoschData nothing arrives
+        batteryId = karoo.addConsumer(OnStreamState.StartStreaming(BIKE_BATTERY), { _ -> }, {}) { ev: OnStreamState ->
+            (ev.state as? StreamState.Streaming)?.dataPoint?.singleValue?.let {
+                val pct = Math.round(it).toInt()
+                if (firstPct == null) firstPct = pct
+                lastPct = pct
+            }
+        }
+    }
+
+    private fun stopBattery() {
+        batteryId?.let { karoo.removeConsumer(it) }
+        batteryId = null
+        val first = firstPct ?: return
+        BatteryLog(applicationContext).save(BatteryLog.Entry(rideStartMs, first, lastPct ?: first))
+        Log.i(Uploader.TAG, "battery: $first% → ${lastPct ?: first}%")
     }
 
     private suspend fun sync(uploader: Uploader, why: String) {
@@ -53,6 +89,8 @@ class RideStatsExtension : KarooExtension("ridestats", BuildConfig.VERSION_NAME)
     }
 
     private companion object {
+        /** The battery stream of the BoschData extension (the one boschRange reads). */
+        val BIKE_BATTERY = DataType.dataTypeId("bosch-data", "bike_battery")
         /** The Karoo writes the FIT when the ride is saved: give it time. */
         const val END_DELAY_MS = 30_000L
         const val START_DELAY_MS = 60_000L

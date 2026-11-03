@@ -20,6 +20,7 @@ class Uploader(private val context: Context, private val net: Net) {
 
     val auth = GoogleAuth(context, net)
     private val doneFile = File(context.filesDir, "handled_fits.txt")
+    private val battery = BatteryLog(context)
 
     private val prefs = context.getSharedPreferences("uploads", Context.MODE_PRIVATE)
 
@@ -43,6 +44,7 @@ class Uploader(private val context: Context, private val net: Net) {
         for ((k, f) in todo.withIndex()) {
             progress(k, todo.size)
             val ride = runCatching { FitSummary.read(f.nameWithoutExtension, f.readBytes(), ::tzMin) }.getOrNull()
+                ?.let { r -> battery.forRide(r.startMs)?.let { r.copy(battStart = it.first, battEnd = it.last) } ?: r }
             when {
                 ride == null -> { failed++ }   // still recording, or unreadable: next time
                 ride.tooShort -> { skipped++; handled += f.name }
