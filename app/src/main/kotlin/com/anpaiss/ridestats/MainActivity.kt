@@ -29,6 +29,7 @@ class MainActivity : AppCompatActivity() {
 
     private val status by lazy { findViewById<TextView>(R.id.status) }
     private val codeBox by lazy { findViewById<View>(R.id.code_box) }
+    private val intro by lazy { findViewById<View>(R.id.intro) }
     private val codeText by lazy { findViewById<TextView>(R.id.code) }
     private val codeUrl by lazy { findViewById<TextView>(R.id.code_url) }
     private val connectBtn by lazy { findViewById<Button>(R.id.btn_connect) }
@@ -76,19 +77,25 @@ class MainActivity : AppCompatActivity() {
             }
             codeText.text = code.userCode
             codeUrl.text = code.url.removePrefix("https://").removePrefix("www.")
-            codeBox.visibility = View.VISIBLE
+            showCode(true)
             status.text = getString(R.string.status_waiting)
             while (isActive && System.currentTimeMillis() < code.expiresAtMs) {
                 delay(code.intervalS * 1000L)
                 when (val p = runCatching { withContext(Dispatchers.IO) { uploader.auth.poll(code) } }.getOrNull()) {
-                    GoogleAuth.Poll.Done -> { codeBox.visibility = View.GONE; refresh(); send(); return@launch }
-                    is GoogleAuth.Poll.Failed -> { codeBox.visibility = View.GONE; status.text = getString(R.string.status_refused, p.reason); return@launch }
+                    GoogleAuth.Poll.Done -> { showCode(false); refresh(); send(); return@launch }
+                    is GoogleAuth.Poll.Failed -> { showCode(false); status.text = getString(R.string.status_refused, p.reason); return@launch }
                     else -> {}   // pending, or a network hiccup: keep asking
                 }
             }
-            codeBox.visibility = View.GONE
+            showCode(false)
             status.text = getString(R.string.status_expired)
         }
+    }
+
+    /** The code takes the place of the intro, so the whole box fits on the Karoo screen. */
+    private fun showCode(on: Boolean) {
+        codeBox.visibility = if (on) View.VISIBLE else View.GONE
+        intro.visibility = if (on) View.GONE else View.VISIBLE
     }
 
     private fun disconnect() {
