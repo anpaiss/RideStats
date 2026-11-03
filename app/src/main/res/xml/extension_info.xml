@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No data fields: RideStats only sends each finished ride to the rider's Google Drive -->
+<ExtensionInfo
+    displayName="@string/app_name"
+    icon="@drawable/ic_launcher"
+    id="ridestats"
+    scansDevices="false" />
