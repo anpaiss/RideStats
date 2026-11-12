@@ -21,7 +21,13 @@
     <string name="sync_failed">Nothing sent: %1$s</string>
     <string name="backup_found">Your Drive has a backup of %1$s from %2$s. After a reset of the Karoo, restore it to get back what %1$s has learned.</string>
     <string name="backup_restore">Restore %1$s</string>
-    <string name="backup_keep">Keep this Karoo\'s data</string>
+    <string name="backup_keep">Don\'t restore, back up this Karoo</string>
     <string name="backup_restoring">Restoring %1$s…</string>
     <string name="backup_kept">%1$s on this Karoo will be backed up from now on.</string>
+    <string name="danger_title">WARNING</string>
+    <string name="danger_cancel">CANCEL</string>
+    <string name="danger_restore">%1$s on this Karoo will be replaced by the backup of %2$s. What it learned here since then will be lost.\n\nRESTORE to confirm, CANCEL to go back.</string>
+    <string name="danger_restore_btn">RESTORE</string>
+    <string name="danger_keep">The backup of %1$s on your Drive (%2$s) will be replaced by the data on this Karoo. After a reset %1$s is empty here: what it had learned will be lost.\n\nREPLACE BACKUP to confirm, CANCEL to go back.</string>
+    <string name="danger_keep_btn">REPLACE BACKUP</string>
 </resources>

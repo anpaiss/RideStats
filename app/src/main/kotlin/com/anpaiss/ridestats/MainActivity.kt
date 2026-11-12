@@ -145,18 +145,36 @@ class MainActivity : AppCompatActivity() {
         restoreBtn.text = getString(R.string.backup_restore, label)
         restoreBtn.isEnabled = true
         restoreBtn.setOnClickListener {
-            restoreBtn.isEnabled = false
-            backupStatus.text = getString(R.string.backup_restoring, label)
-            lifecycleScope.launch {
-                val (ok, msg) = withContext(Dispatchers.IO) { backups.restore(p) }
-                backupStatus.text = msg
-                if (ok) checkBackups() else restoreBtn.isEnabled = true
+            confirmDanger(getString(R.string.danger_restore, label, date), getString(R.string.danger_restore_btn)) {
+                restoreBtn.isEnabled = false
+                backupStatus.text = getString(R.string.backup_restoring, label)
+                lifecycleScope.launch {
+                    val (ok, msg) = withContext(Dispatchers.IO) { backups.restore(p) }
+                    backupStatus.text = msg
+                    if (ok) checkBackups() else restoreBtn.isEnabled = true
+                }
             }
         }
         keepBtn.setOnClickListener {
-            backups.keepCurrent(p.app)
-            backupStatus.text = getString(R.string.backup_kept, label)
-            checkBackups()
+            confirmDanger(getString(R.string.danger_keep, label, date), getString(R.string.danger_keep_btn)) {
+                backups.keepCurrent(p.app)
+                backupStatus.text = getString(R.string.backup_kept, label)
+                checkBackups()
+            }
         }
+    }
+
+    /** Second step for anything that overwrites data: a red box that says what is lost, confirm or cancel. */
+    private fun confirmDanger(text: String, confirm: String, onConfirm: () -> Unit) {
+        val view = layoutInflater.inflate(R.layout.dialog_danger, null)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this).setView(view).setCancelable(true).create()
+        view.findViewById<TextView>(R.id.danger_text).text = text
+        view.findViewById<Button>(R.id.danger_confirm).apply {
+            this.text = confirm
+            setOnClickListener { dialog.dismiss(); onConfirm() }
+        }
+        view.findViewById<Button>(R.id.danger_cancel).setOnClickListener { dialog.dismiss() }
+        dialog.show()
+        dialog.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(0xFFB71C1C.toInt()))
     }
 }
