@@ -79,6 +79,8 @@ class RideStatsExtension : KarooExtension("ridestats", BuildConfig.VERSION_NAME)
         if (!uploader.auth.connected) return
         val r = runCatching { uploader.sync() }.getOrElse { Log.w(Uploader.TAG, "sync ($why): ${it.message}"); return }
         Log.i(Uploader.TAG, "sync ($why): sent ${r.sent}, failed ${r.failed}${r.error?.let { ", $it" } ?: ""}")
+        runCatching { ExtensionBackups(applicationContext, uploader.net, uploader.auth).backupAll() }
+            .onFailure { Log.w(Uploader.TAG, "backup ($why): ${it.message}") }
     }
 
     override fun onDestroy() {

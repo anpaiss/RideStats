@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var karoo: KarooSystemService
     private lateinit var uploader: Uploader
+    private lateinit var backups: ExtensionBackups
     private var loginJob: Job? = null
 
     private val status by lazy { findViewById<TextView>(R.id.status) }
@@ -35,18 +36,25 @@ class MainActivity : AppCompatActivity() {
     private val connectBtn by lazy { findViewById<Button>(R.id.btn_connect) }
     private val sendBtn by lazy { findViewById<Button>(R.id.btn_send) }
     private val progress by lazy { findViewById<TextView>(R.id.progress) }
+    private val restoreBox by lazy { findViewById<View>(R.id.restore_box) }
+    private val restoreText by lazy { findViewById<TextView>(R.id.restore_text) }
+    private val restoreBtn by lazy { findViewById<Button>(R.id.btn_restore) }
+    private val keepBtn by lazy { findViewById<Button>(R.id.btn_keep) }
+    private val backupStatus by lazy { findViewById<TextView>(R.id.backup_status) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         karoo = KarooSystemService(applicationContext).also { it.connect { } }
         uploader = Uploader(applicationContext, Net(karoo))
+        backups = ExtensionBackups(applicationContext, uploader.net, uploader.auth)
         connectBtn.setOnClickListener { if (uploader.auth.connected) disconnect() else connect() }
         sendBtn.setOnClickListener { send() }
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
         }
         refresh()
+        if (uploader.auth.connected && !uploader.auth.needsReconnect) checkBackups()
     }
 
     override fun onDestroy() {
@@ -115,6 +123,40 @@ class MainActivity : AppCompatActivity() {
                 else -> getString(R.string.sync_done, r.sent) + (if (r.failed > 0) " " + getString(R.string.sync_retry, r.failed) else "")
             }
             refresh()
+            checkBackups()
+        }
+    }
+
+    /** Backs up what changed; a copy on Drive this Karoo has not adopted (after a reset) is offered for restore. */
+    private fun checkBackups() {
+        lifecycleScope.launch {
+            val pending = runCatching { withContext(Dispatchers.IO) { backups.backupAll() } }.getOrDefault(emptyList())
+            showPending(pending.firstOrNull())
+        }
+    }
+
+    private fun showPending(p: ExtensionBackups.Pending?) {
+        restoreBox.visibility = if (p == null) View.GONE else View.VISIBLE
+        if (p == null) return
+        val label = p.app.label
+        val date = android.text.format.DateUtils.formatDateTime(this, p.backup.modifiedMs,
+            android.text.format.DateUtils.FORMAT_SHOW_DATE or android.text.format.DateUtils.FORMAT_SHOW_TIME)
+        restoreText.text = getString(R.string.backup_found, label, date)
+        restoreBtn.text = getString(R.string.backup_restore, label)
+        restoreBtn.isEnabled = true
+        restoreBtn.setOnClickListener {
+            restoreBtn.isEnabled = false
+            backupStatus.text = getString(R.string.backup_restoring, label)
+            lifecycleScope.launch {
+                val (ok, msg) = withContext(Dispatchers.IO) { backups.restore(p) }
+                backupStatus.text = msg
+                if (ok) checkBackups() else restoreBtn.isEnabled = true
+            }
+        }
+        keepBtn.setOnClickListener {
+            backups.keepCurrent(p.app)
+            backupStatus.text = getString(R.string.backup_kept, label)
+            checkBackups()
         }
     }
 }

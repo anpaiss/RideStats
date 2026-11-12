@@ -6,6 +6,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- The finished rides in /sdcard/FitFiles -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Backup of our other extensions to Drive: their providers ask for this, same signature only.
+         Declared here too, so it works whichever app is installed first. -->
+    <permission
+        android:name="com.anpaiss.permission.EXTENSION_BACKUP"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="com.anpaiss.permission.EXTENSION_BACKUP" />
+
+    <queries>
+        <provider android:authorities="com.anpaiss.bettereta.backup" />
+    </queries>
 
     <application
         android:allowBackup="false"

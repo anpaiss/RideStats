@@ -14,7 +14,7 @@ import java.util.TimeZone
  * sync only looks at new rides; whatever fails stays out of the list and is
  * tried again at the next sync.
  */
-class Uploader(private val context: Context, private val net: Net) {
+class Uploader(private val context: Context, val net: Net) {
 
     class Result(val sent: Int, val skipped: Int, val failed: Int, val error: String?)
 

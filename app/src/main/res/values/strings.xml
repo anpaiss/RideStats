@@ -19,4 +19,9 @@
     <string name="sync_retry">%1$d will be retried later.</string>
     <string name="sync_nothing">Everything is already sent.</string>
     <string name="sync_failed">Nothing sent: %1$s</string>
+    <string name="backup_found">Your Drive has a backup of %1$s from %2$s. After a reset of the Karoo, restore it to get back what %1$s has learned.</string>
+    <string name="backup_restore">Restore %1$s</string>
+    <string name="backup_keep">Keep this Karoo\'s data</string>
+    <string name="backup_restoring">Restoring %1$s…</string>
+    <string name="backup_kept">%1$s on this Karoo will be backed up from now on.</string>
 </resources>

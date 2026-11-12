@@ -66,6 +66,11 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfigs.findByName("release")?.let { signingConfig = it }
         }
+        debug {
+            // With the release key when the environment has it, as in BetterETA: the backup
+            // provider of the other extensions asks for a signature permission. Stays debuggable.
+            signingConfigs.findByName("release")?.let { signingConfig = it }
+        }
     }
 }
 

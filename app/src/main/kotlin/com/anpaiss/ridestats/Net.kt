@@ -9,7 +9,9 @@ import java.net.URL
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class HttpResult(val code: Int, val body: String)
+class HttpResult(val code: Int, val bytes: ByteArray) {
+    val body: String get() = bytes.decodeToString()
+}
 
 /**
  * Blocking HTTP with the two paths the Karoo has, as in PoiAhead: its own WiFi
@@ -40,7 +42,7 @@ class Net(private val karoo: KarooSystemService?) {
             if (body != null) conn.outputStream.use { it.write(body) }
             val code = conn.responseCode
             val stream = if (code >= 400) conn.errorStream else conn.inputStream
-            return HttpResult(code, stream?.use { it.readBytes().decodeToString() }.orEmpty())
+            return HttpResult(code, stream?.use { it.readBytes() } ?: ByteArray(0))
         } finally {
             conn.disconnect()
         }
@@ -64,7 +66,7 @@ class Net(private val karoo: KarooSystemService?) {
         }
         val r = complete ?: throw IOException("sdk: ${failure ?: "no response"}")
         r.error?.let { throw IOException("sdk: $it") }
-        return HttpResult(r.statusCode, r.body?.decodeToString().orEmpty())
+        return HttpResult(r.statusCode, r.body ?: ByteArray(0))
     }
 
     private companion object {
