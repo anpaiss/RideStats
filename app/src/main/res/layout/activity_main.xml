@@ -105,6 +105,32 @@
             android:text="@string/send"
             android:textSize="18sp" />
 
+        <TextView
+            android:id="@+id/backup_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/backup_header"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/backup_intro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/backup_intro"
+            android:textColor="#BDBDBD"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/backup_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
         <LinearLayout
             android:id="@+id/restore_box"
             android:layout_width="match_parent"

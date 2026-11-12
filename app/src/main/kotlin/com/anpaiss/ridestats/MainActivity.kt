@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     private val restoreBtn by lazy { findViewById<Button>(R.id.btn_restore) }
     private val keepBtn by lazy { findViewById<Button>(R.id.btn_keep) }
     private val backupStatus by lazy { findViewById<TextView>(R.id.backup_status) }
+    private val backupHeader by lazy { findViewById<View>(R.id.backup_header) }
+    private val backupList by lazy { findViewById<android.widget.LinearLayout>(R.id.backup_list) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
         }
         refresh()
-        if (uploader.auth.connected && !uploader.auth.needsReconnect) checkBackups()
+        checkBackups()
     }
 
     override fun onDestroy() {
@@ -127,20 +129,52 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Backs up what changed; a copy on Drive this Karoo has not adopted (after a reset) is offered for restore. */
+    /** Backs up what is on and changed; a copy on Drive this Karoo has not adopted (after a reset) is offered for restore. */
     private fun checkBackups() {
+        showBackups(backups.localStates())
+        if (!uploader.auth.connected || uploader.auth.needsReconnect) return
         lifecycleScope.launch {
-            val pending = runCatching { withContext(Dispatchers.IO) { backups.backupAll() } }.getOrDefault(emptyList())
-            showPending(pending.firstOrNull())
+            val states = runCatching { withContext(Dispatchers.IO) { backups.backupAll() } }.getOrNull() ?: return@launch
+            showBackups(states)
         }
     }
 
-    private fun showPending(p: ExtensionBackups.Pending?) {
-        restoreBox.visibility = if (p == null) View.GONE else View.VISIBLE
-        if (p == null) return
-        val label = p.app.label
-        val date = android.text.format.DateUtils.formatDateTime(this, p.backup.modifiedMs,
-            android.text.format.DateUtils.FORMAT_SHOW_DATE or android.text.format.DateUtils.FORMAT_SHOW_TIME)
+    /** One switch per extension that can be backed up, off until the rider turns it on. */
+    private fun showBackups(states: List<ExtensionBackups.State>) {
+        backupHeader.visibility = if (states.isEmpty()) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.backup_intro).visibility = backupHeader.visibility
+        backupList.removeAllViews()
+        for (st in states) {
+            val sw = androidx.appcompat.widget.SwitchCompat(this).apply {
+                text = st.app.label + "\n" + when {
+                    st.enabled == null -> getString(R.string.backup_new)
+                    st.enabled == false -> getString(R.string.backup_off)
+                    st.lastMs > 0 -> getString(R.string.backup_last, fmt(st.lastMs))
+                    else -> getString(R.string.backup_none_yet)
+                }
+                textSize = 16f
+                setTextColor(0xFFFFFFFF.toInt())
+                isChecked = st.enabled == true
+                setPadding(0, 16, 0, 16)
+                setOnCheckedChangeListener { _, on ->
+                    backups.setEnabled(st.app, on)
+                    checkBackups()
+                }
+            }
+            backupList.addView(sw)
+        }
+        showPending(states.firstOrNull { it.pending != null })
+    }
+
+    private fun fmt(ms: Long) = android.text.format.DateUtils.formatDateTime(this, ms,
+        android.text.format.DateUtils.FORMAT_SHOW_DATE or android.text.format.DateUtils.FORMAT_SHOW_TIME)
+
+    private fun showPending(st: ExtensionBackups.State?) {
+        val backup = st?.pending
+        restoreBox.visibility = if (backup == null) View.GONE else View.VISIBLE
+        if (st == null || backup == null) return
+        val label = st.app.label
+        val date = fmt(backup.modifiedMs)
         restoreText.text = getString(R.string.backup_found, label, date)
         restoreBtn.text = getString(R.string.backup_restore, label)
         restoreBtn.isEnabled = true
@@ -149,7 +183,7 @@ class MainActivity : AppCompatActivity() {
                 restoreBtn.isEnabled = false
                 backupStatus.text = getString(R.string.backup_restoring, label)
                 lifecycleScope.launch {
-                    val (ok, msg) = withContext(Dispatchers.IO) { backups.restore(p) }
+                    val (ok, msg) = withContext(Dispatchers.IO) { backups.restore(st.app, backup) }
                     backupStatus.text = msg
                     if (ok) checkBackups() else restoreBtn.isEnabled = true
                 }
@@ -157,7 +191,7 @@ class MainActivity : AppCompatActivity() {
         }
         keepBtn.setOnClickListener {
             confirmDanger(getString(R.string.danger_keep, label, date), getString(R.string.danger_keep_btn)) {
-                backups.keepCurrent(p.app)
+                backups.backUpThisKaroo(st.app)
                 backupStatus.text = getString(R.string.backup_kept, label)
                 checkBackups()
             }

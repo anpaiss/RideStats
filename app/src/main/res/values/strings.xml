@@ -24,6 +24,12 @@
     <string name="backup_keep">Don\'t restore, back up this Karoo</string>
     <string name="backup_restoring">Restoring %1$s…</string>
     <string name="backup_kept">%1$s on this Karoo will be backed up from now on.</string>
+    <string name="backup_header">Backups to your Drive</string>
+    <string name="backup_intro">What our extensions have learned, kept safe for a reset of the Karoo. Off until you turn it on.</string>
+    <string name="backup_new">New: turn on to back it up</string>
+    <string name="backup_off">Off</string>
+    <string name="backup_none_yet">On, first backup soon</string>
+    <string name="backup_last">On, last backup %1$s</string>
     <string name="danger_title">WARNING</string>
     <string name="danger_cancel">CANCEL</string>
     <string name="danger_restore">%1$s on this Karoo will be replaced by the backup of %2$s. What it learned here since then will be lost.\n\nRESTORE to confirm, CANCEL to go back.</string>

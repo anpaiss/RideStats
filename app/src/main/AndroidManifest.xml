@@ -12,10 +12,7 @@
         android:name="com.anpaiss.permission.EXTENSION_BACKUP"
         android:protectionLevel="signature" />
     <uses-permission android:name="com.anpaiss.permission.EXTENSION_BACKUP" />
-
-    <queries>
-        <provider android:authorities="com.anpaiss.bettereta.backup" />
-    </queries>
+    <!-- targetSdk 28: no package visibility rules, the backup providers of our extensions are found by permission -->
 
     <application
         android:allowBackup="false"
