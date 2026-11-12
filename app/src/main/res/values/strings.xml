@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">RideStats</string>
-    <string name="intro">Sends each ride to your Google Drive at the end of the ride. The RideStats dashboard shows your totals by week, month and year.</string>
+    <string name="app_name">RideStats &amp; Backups</string>
+    <string name="intro">Sends each ride to your Google Drive at the end of the ride: the RideStats dashboard shows your totals by week, month and year. It can also back up our other extensions to your Drive, see below.</string>
     <string name="connect">Connect Google</string>
     <string name="disconnect">Disconnect</string>
     <string name="send">Send rides now</string>
