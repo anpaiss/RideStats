@@ -1,4 +1,5 @@
 import java.util.Base64
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -15,6 +16,11 @@ val appVersionCode: Int = if (buildNumber > 0) 100 + buildNumber else 100
 // The keystore travels as a base64 secret and is decoded next to the module,
 // outside build/ so `clean` cannot remove it mid-build. *.keystore is ignored.
 val keystoreBase64: String? = System.getenv("KEYSTORE_BASE64")?.takeIf { it.isNotBlank() }
+// Local builds: the shared key from local.properties or ../BigFields/local.properties (as RouteProfile)
+val localSigning: Properties? = listOf(rootProject.file("local.properties"), rootProject.file("../BigFields/local.properties"))
+    .filter { it.exists() }
+    .map { f -> Properties().apply { f.inputStream().use { load(it) } } }
+    .firstOrNull { it.containsKey("signing.storeFile") }
 
 // Google OAuth client for the Karoo ("TVs and limited input devices"), as
 // downloaded from the Cloud console into google-client.json (git-ignored); CI
@@ -56,6 +62,15 @@ android {
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias      = System.getenv("KEY_ALIAS")
                 keyPassword   = System.getenv("KEY_PASSWORD")
+            }
+        }
+    } else if (localSigning != null) {
+        signingConfigs {
+            create("release") {
+                storeFile     = file(localSigning["signing.storeFile"] as String)
+                storePassword = localSigning["signing.storePassword"] as String
+                keyAlias      = localSigning["signing.keyAlias"] as String
+                keyPassword   = localSigning["signing.keyPassword"] as String
             }
         }
     }

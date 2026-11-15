@@ -4,6 +4,8 @@
 
     <!-- Google sign-in and Drive upload, over WiFi or through the Karoo's link to the phone -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- to send again, when the network comes back, a ride that ended out of WiFi -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- The finished rides in /sdcard/FitFiles -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- Backup of our other extensions to Drive: their providers ask for this, same signature only.

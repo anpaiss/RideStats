@@ -10,7 +10,7 @@ import java.util.TimeZone
 
 /**
  * Sends to Drive every ride of /sdcard/FitFiles not sent yet. The FIT names
- * already handled (sent, or too short to be a ride) are kept in a file, so a
+ * already handled (sent, too short to be a ride, or simulated) are kept in a file, so a
  * sync only looks at new rides; whatever fails stays out of the list and is
  * tried again at the next sync.
  */
@@ -21,6 +21,7 @@ class Uploader(private val context: Context, val net: Net) {
     val auth = GoogleAuth(context, net)
     private val doneFile = File(context.filesDir, "handled_fits.txt")
     private val battery = BatteryLog(context)
+    private val sims = SimRides(context)
 
     private val prefs = context.getSharedPreferences("uploads", Context.MODE_PRIVATE)
 
@@ -48,6 +49,7 @@ class Uploader(private val context: Context, val net: Net) {
             when {
                 ride == null -> { failed++ }   // still recording, or unreadable: next time
                 ride.tooShort -> { skipped++; handled += f.name }
+                sims.isSimulated(ride.startMs) -> { skipped++; handled += f.name; Log.i(TAG, "${f.name}: KarooSim ride, not sent") }
                 else -> runCatching { drive.uploadRide(folder, ride.toJson()) }
                     .onSuccess { sent++; handled += f.name }
                     .onFailure { failed++; error = it.message; Log.w(TAG, "upload ${f.name}: ${it.message}") }
