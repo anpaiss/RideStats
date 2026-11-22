@@ -99,7 +99,10 @@ val generateManifest by tasks.registering {
     val repo = "https://github.com/anpaiss/RideStats"
     val version = releaseVersion
     val code = appVersionCode
-    val notes = System.getenv("RELEASE_NOTES").orEmpty().ifBlank { "See the GitHub release." }
+    // What's new, shown by the Karoo's extension library: the env wins, else app/release-notes.txt
+    val notes = System.getenv("RELEASE_NOTES")?.takeIf { it.isNotBlank() }
+        ?: layout.projectDirectory.file("release-notes.txt").asFile.takeIf { it.exists() }?.readText()?.trim()
+        ?: "See the GitHub release."
     inputs.property("version", version)
     inputs.property("code", code)
     inputs.property("notes", notes)
