@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         status.text = when {
             a.connected && a.needsReconnect -> getString(R.string.status_reconnect)
             a.connected -> getString(R.string.status_connected) + (uploader.lastSentAt.takeIf { it > 0 }?.let {
-                " " + getString(R.string.status_last, uploader.lastSent,
+                " " + resources.getQuantityString(R.plurals.status_last, uploader.lastSent, uploader.lastSent,
                     android.text.format.DateUtils.formatDateTime(this, it, android.text.format.DateUtils.FORMAT_SHOW_DATE or android.text.format.DateUtils.FORMAT_SHOW_TIME))
             } ?: "")
             else -> getString(R.string.status_not_connected)
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             progress.text = when {
                 r.error != null && r.sent == 0 -> getString(R.string.sync_failed, r.error)
                 r.sent == 0 && r.failed == 0 -> getString(R.string.sync_nothing)
-                else -> getString(R.string.sync_done, r.sent) + (if (r.failed > 0) " " + getString(R.string.sync_retry, r.failed) else "")
+                else -> resources.getQuantityString(R.plurals.sync_done, r.sent, r.sent) + (if (r.failed > 0) " " + getString(R.string.sync_retry, r.failed) else "")
             }
             refresh()
             checkBackups()

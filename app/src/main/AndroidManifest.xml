@@ -24,6 +24,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
+        <!-- The Karoo fetches this manifest to show the extension's details and offer updates
+             in its library: it must exist in every release (app/manifest.json as an asset). -->
+        <meta-data
+            android:name="io.hammerhead.karooext.MANIFEST_URL"
+            android:value="https://github.com/anpaiss/RideStats/releases/latest/download/manifest.json" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

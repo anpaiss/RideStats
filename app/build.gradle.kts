@@ -42,6 +42,7 @@ android {
         applicationId = "com.anpaiss.ridestats"
         minSdk        = 26
         // 28 like BetterETA: READ_EXTERNAL_STORAGE still opens /sdcard/FitFiles
+        //noinspection ExpiredTargetSdkVersion
         targetSdk     = 28
         versionCode   = appVersionCode
         versionName   = releaseVersion
@@ -88,6 +89,46 @@ android {
         }
     }
 }
+
+// Karoo extension manifest: the JSON the Karoo fetches from MANIFEST_URL (see
+// AndroidManifest.xml). Published next to the APK with every release; the APK
+// is uploaded under the fixed name RideStats.apk so releases/latest/download
+// works. Schema: io.hammerhead.karooext.models.KarooAppManifest.
+val generateManifest by tasks.registering {
+    val out  = layout.projectDirectory.file("manifest.json")
+    val repo = "https://github.com/anpaiss/RideStats"
+    val version = releaseVersion
+    val code = appVersionCode
+    val notes = System.getenv("RELEASE_NOTES").orEmpty().ifBlank { "See the GitHub release." }
+    inputs.property("version", version)
+    inputs.property("code", code)
+    inputs.property("notes", notes)
+    outputs.file(out)
+    doLast {
+        fun q(v: String) = "\"" + v.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\""
+        out.asFile.writeText(
+            """
+            {
+              "label": "RideStats & Backups",
+              "packageName": "com.anpaiss.ridestats",
+              "iconUrl": ${q("https://raw.githubusercontent.com/anpaiss/RideStats/master/docs/icon.png")},
+              "latestApkUrl": ${q("$repo/releases/latest/download/RideStats.apk")},
+              "latestVersion": ${q(version)},
+              "latestVersionCode": $code,
+              "developer": "Andrea Paissan",
+              "description": ${q("Every ride goes to your own Google Drive when it ends, and the RideStats dashboard on your phone or PC shows your kilometres, climbing and time by week, month and year. It can also back up what our other extensions have learned, to restore it after a reset of the Karoo.")},
+              "releaseNotes": ${q(notes)},
+              "screenshotUrls": [
+                ${q("https://raw.githubusercontent.com/anpaiss/RideStats/master/docs/dashboard.png")},
+                ${q("https://raw.githubusercontent.com/anpaiss/RideStats/master/docs/app.png")}
+              ],
+              "tags": ["utility"]
+            }
+            """.trimIndent()
+        )
+    }
+}
+tasks.named("preBuild") { dependsOn(generateManifest) }
 
 kotlin {
     jvmToolchain(17)

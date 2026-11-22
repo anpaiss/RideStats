@@ -8,14 +8,20 @@
     <string name="code_hint2">and enter this code:</string>
     <string name="status_not_connected">Not connected. Connect your Google account to start.</string>
     <string name="status_connected">Connected to Google Drive.</string>
-    <string name="status_last">Last sent: %1$d rides, %2$s.</string>
+    <plurals name="status_last">
+        <item quantity="one">Last sent: %1$d ride, %2$s.</item>
+        <item quantity="other">Last sent: %1$d rides, %2$s.</item>
+    </plurals>
     <string name="status_reconnect">Google stopped the access. Tap Connect Google to sign in again.</string>
     <string name="status_waiting">Waiting for the code to be confirmed on the phone…</string>
     <string name="status_expired">The code has expired. Tap Connect Google for a new one.</string>
     <string name="status_refused">Google did not connect: %1$s</string>
     <string name="status_offline">No connection: turn on WiFi or check the phone link (%1$s).</string>
     <string name="progress">Sending… %1$d of %2$d</string>
-    <string name="sync_done">%1$d rides sent.</string>
+    <plurals name="sync_done">
+        <item quantity="one">%1$d ride sent.</item>
+        <item quantity="other">%1$d rides sent.</item>
+    </plurals>
     <string name="sync_retry">%1$d will be retried later.</string>
     <string name="sync_nothing">Everything is already sent.</string>
     <string name="sync_failed">Nothing sent: %1$s</string>
