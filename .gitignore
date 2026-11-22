@@ -21,3 +21,9 @@ app/manifest.json
 
 # Note di sessione, fuori dal repository come negli altri progetti
 HANDOVER.md
+
+# Release material kept out of the repository, as in the other extensions
+reddit_post*.md
+reddit_images/
+screenshots/
+set-ci-secrets.ps1
