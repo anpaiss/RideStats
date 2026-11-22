@@ -70,6 +70,8 @@ It is not on the Hammerhead app store, but once installed it appears in the Karo
 ## Is it safe?
 
 - The code is all here, open source.
+- `RideStats.apk` 1.0 on [VirusTotal](https://www.virustotal.com/gui/file/43d6d39088a3426e96196bd811fa384f8ca2238ccb8731e2c9c99300ec30c6f5): none of the 66 engines flag it.
+- Its SHA-256 is `43d6d39088a3426e96196bd811fa384f8ca2238ccb8731e2c9c99300ec30c6f5`; compare it with the file you downloaded (`certutil -hashfile RideStats.apk SHA256` on Windows, `sha256sum RideStats.apk` elsewhere).
 - The APK is built by GitHub Actions from the tagged source, with a signed provenance; each release's notes give its SHA-256 and link its VirusTotal report. Check the provenance with `gh attestation verify RideStats.apk -R anpaiss/RideStats`.
 - Permissions: internet and network state (Google sign-in and Drive), storage (to read the ride files in `/sdcard/FitFiles`), and a permission shared only with apps signed by the same author, for the backups.
 - The Google client secret in the APK is not a secret: for apps installed on a device Google does not treat it as confidential.
