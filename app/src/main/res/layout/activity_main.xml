@@ -79,15 +79,21 @@
                 android:textSize="16sp"
                 android:gravity="center" />
 
+            <!-- Google's codes grew to 12 characters ("VQM-BQQ-YRFW", 442 px at 30sp
+                 in the Karoo font, 375 px of room): at a fixed 30sp the end was cut
+                 and Google said "wrong code" (issue #1). Shrinks until it fits. -->
             <TextView
                 android:id="@+id/code"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:textColor="#FF5823"
-                android:textSize="30sp"
                 android:textStyle="bold"
                 android:maxLines="1"
-                android:gravity="center" />
+                android:gravity="center"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="12sp"
+                android:autoSizeMaxTextSize="30sp"
+                android:autoSizeStepGranularity="1sp" />
         </LinearLayout>
 
         <Button
